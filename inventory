@@ -1,0 +1,6 @@
+[all]
+example.com
+
+[all:vars]
+ansible_connection=ssh
+ansible_user=root

@@ -1,0 +1,41 @@
+{{ ansible_managed | comment }}
+
+{
+  "inbounds": [{
+    "port": {{ v2ray_port }},
+    "listen": "127.0.0.1",
+    "protocol": "vmess",
+    "settings": {
+      "clients": [
+        {
+          "id": "{{ v2ray_id }}",
+          "level": 1,
+          "alterId": 64
+        }
+      ]
+    },
+    "streamSettings": {
+      "network": "ws",
+      "wsSettings": {
+        "path": "{{ v2ray_ws_path }}"
+      }
+    }
+  }],
+  "outbounds": [{
+    "protocol": "freedom",
+    "settings": {}
+  },{
+    "protocol": "blackhole",
+    "settings": {},
+    "tag": "blocked"
+  }],
+  "routing": {
+    "rules": [
+      {
+        "type": "field",
+        "ip": ["geoip:private"],
+        "outboundTag": "blocked"
+      }
+    ]
+  }
+}

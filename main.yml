@@ -1,0 +1,7 @@
+---
+- hosts: all
+  become: true
+
+  roles:
+    - nginxinc.nginx
+    - v2ray

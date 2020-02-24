@@ -1,0 +1,104 @@
+---
+- set_fact:
+    v2ray_port: "{{ 37000 | random(start=10000) }}"
+    v2ray_id: "{{ lookup('password', '/dev/null length=12 chars=ascii_letters') | to_uuid }}"
+    v2ray_ws_path: "/{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"
+
+- name: Enable and start nginx service, which will start http web site to be used later
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Install required packages
+  apt:
+    name: ["unzip", "socat", "git"]
+    state: present
+    update_cache: yes
+
+- name: Download v2ray installation script
+  get_url:
+    url: https://install.direct/go.sh
+    dest: /tmp/go.sh
+    mode: '0755'
+
+- name: Install v2ray
+  command: bash /tmp/go.sh
+  register: install_v2ray
+
+- name: Dynamically Generate v2ray Configuration File
+  template:
+    src: v2ray/config.json.j2
+    dest: /etc/v2ray/config.json
+  notify: Restart v2ray
+
+- name: Enable and start v2ray service
+  service:
+    name: v2ray
+    state: started
+    enabled: yes
+  when: "'is installed' in install_v2ray.stderr"
+
+- name:  Download acme instalation script
+  get_url:
+    url: https://get.acme.sh
+    dest: /tmp/acme.sh
+    mode: '0755'
+
+- name: Install acme scripts
+  command: bash /tmp/acme.sh
+  args:
+    creates: /root/.acme.sh/acme.sh
+
+- name: Create well-known/acme-challenge/ directory
+  file:
+    path: /usr/share/nginx/html/.well-known/acme-challenge
+    owner: www-data
+    group: www-data
+    mode: 0555
+    state: directory
+  notify: Restart nginx
+  tags: redo
+
+- name: Issue cert
+  command: /root/.acme.sh/acme.sh --issue -f -w /usr/share/nginx/html -d "{{ v2ray_domain }}" -k 2048
+
+- name: Install cert
+  command: /root/.acme.sh/acme.sh --installcert -d "{{ v2ray_domain }}" \
+           --key-file /etc/v2ray/v2ray.key \
+           --fullchain-file /etc/v2ray/v2ray.crt
+
+- name: Ensure NGINX HTTP Directory Exists
+  file:
+    path: /etc/nginx/conf.d/
+    state: directory
+
+- name: Dynamically Generate Config Files
+  template:
+    src: http/default.conf.j2
+    dest: /etc/nginx/conf.d/default.conf
+    backup: yes
+  notify: Restart nginx
+
+- name: Add renew cert cron job
+  cron:
+    name: "renew cet"
+    minute: "0"
+    hour: "0"
+    job: /root/.acme.sh/acme.sh --renew -d "{{ v2ray_domain }}"
+
+- name: Update web site with 3DCEList
+  git:
+    repo: https://github.com/xsoloking/3DCEList.git
+    dest: /tmp/3DCEList
+
+- name: Copy 3DCEList to html root
+  shell: mv /tmp/3DCEList/* /usr/share/nginx/html/
+
+- name: Show config info
+  debug:
+    msg:
+    - "v2ray domain: {{ v2ray_domain }}"
+    - "v2ray client port: 443"
+    - "v2ray client id: {{ v2ray_id }}"
+    - "v2ray ws path: {{ v2ray_ws_path }}"

@@ -1,0 +1,6 @@
+---
+- name: Restart v2ray
+  service:
+    name: v2ray
+    state: restarted
+  ignore_errors: yes
