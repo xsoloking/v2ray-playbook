@@ -4,7 +4,7 @@ This playbook deploys v2ray+ws+tls+nginx.
 
 - NGINX installation
 - V2Ray installation
-- Certificate handling
+- Issue&renew certifates via acme 
 - HTTPS + WebSocket setup
 
 Requirements
@@ -16,14 +16,19 @@ This playbook was developed and tested with [maintained](https://docs.ansible.co
 
 Instructions on how to install Ansible can be found in the [Ansible website](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
 
-Platforms
----------
-Tested OK on Ubuntu 18.04
-
 
 **Ansible NGINX Role**
 
 This role installs NGINX Open Source. Instructions on how to install it can be found in the [Ansible NGINX Role website](https://github.com/nginxinc/ansible-role-nginx).
+
+**acme.sh**
+
+An ACME protocol client written purely in Shell (Unix shell) language. Instructions on how to install it can be found in the [acme.sh](https://github.com/acmesh-official/acme.sh).
+
+Platforms
+---------
+Tested OK on Ubuntu 18.04
+
 
 ## Usage
 
