@@ -61,7 +61,7 @@ ok: [example.com] => {
 
 - Checking if https is working, if https is't workding, this might be a known issue of Ansible, sometimes file module doesn't work as expected. You should try below cmd.
 ```BASH
-ansible-playbook -i inventory main.yml --limit do -e "v2ray_domain=[example.com]" -t redo
+ansible-playbook -i inventory main.yml -e "v2ray_domain=[example.com]" -t redo
 ```
 - Checking if V2Ray is working, below is necessary keys for client
 ```
