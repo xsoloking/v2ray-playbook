@@ -45,7 +45,7 @@ ansible_user=root
 - Make sure you have setup ssh connection properly
 - Start to deployment with below cmd
 ```BASH
-ansible-playbook -i inventory main.yml --limit do -e "v2ray_domain=[example.com]"
+ansible-playbook -i inventory main.yml -e "v2ray_domain=[example.com]"
 
 Output:
 ...
